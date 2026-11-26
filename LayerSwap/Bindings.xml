@@ -1,0 +1,8 @@
+<Bindings>
+  <Binding name="LAYERSWAP_SWAP" category="LayerSwap">
+    LayerSwap_SwapKey()
+  </Binding>
+  <Binding name="LAYERSWAP_PANEL" category="LayerSwap">
+    LayerSwap_PanelKey()
+  </Binding>
+</Bindings>
