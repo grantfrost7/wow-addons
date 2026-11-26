@@ -3216,7 +3216,13 @@ end
 function Send.joins()
   Send.leaveHub()
   if Send.restricted() then Send.joinHub(); return end
-  if hosting and GetChannelName(LAYER_CHANNEL) == 0 then pcall(JoinChannelByName, LAYER_CHANNEL) end
+  if hosting and GetChannelName(LAYER_CHANNEL) == 0 then Send.joinLayer("host") end
+end
+-- The join of the layer channel itself; true when the caller may say it is joined. On Classic Era and TBC Anniversary
+-- LayerSwap_Classic.lua says so itself, once the game has let the player in - on WoW Forever this one stays as it is.
+function Send.joinLayer(why)
+  pcall(JoinChannelByName, LAYER_CHANNEL)
+  return true
 end
 
 -- 1.14.4: an ask nobody answered is not sent again to the same place from the same zone within
@@ -4722,8 +4728,7 @@ local function requestSwap(target, via, leaving, wantNumber)
   else
     local channel = GetChannelName(LAYER_CHANNEL)
     if channel == 0 then
-      pcall(JoinChannelByName, LAYER_CHANNEL)
-      setNotice("Joined the layer channel. Click again to ask.", 15, "Click to ask")
+      if Send.joinLayer("ask") then setNotice("Joined the layer channel. Click again to ask.", 15, "Click to ask") end
     else
       -- everyone reads "inv layer"; the note tells a LayerSwap host which layer: the one named,
       -- or any but the current one, so a host on this very layer does not answer
@@ -7865,7 +7870,7 @@ f:SetScript("OnEvent", function(_, ev, a1, a2, a3, a4, _, a6, zoneChannelID, a8,
     LayerSwapDB.log = {}
     -- 1.14.41: the game's build and the file's state as well, so a log tells which it came from (Layer.DEV: until a release)
     local okB, _, gameBuild = pcall(function() return GetBuildInfo() end)
-    LayerSwapDB.session = { started = date("%Y-%m-%d %H:%M:%S"), version = "1.14.57", me = fullName("player"), toc = TOC, restricted = Send.restricted(),
+    LayerSwapDB.session = { started = date("%Y-%m-%d %H:%M:%S"), version = "1.14.58", me = fullName("player"), toc = TOC, restricted = Send.restricted(),
                             build = okB and gameBuild or nil, dev = Layer.DEV,
                             search = Who.can() }
     -- The layers seen survive a /reload and a relog; an hour without a sighting drops one.
@@ -8096,3 +8101,12 @@ SlashCmdList["LAYERSWAP"] = function(msg)
       .. (FOREVER and "   |   /ls spot - log where you stand" or "") .. "   |   /ls status")
   end
 end
+
+-- What LayerSwap_Classic.lua builds on: Classic Era and TBC Anniversary load it after this file (LayerSwap_Classic.toc).
+-- Inside a function: this file's main chunk holds as many locals as Lua 5.1 allows.
+;(function(ns)
+  if type(ns) ~= "table" then return end
+  ns.FOREVER, ns.LAYER_CHANNEL, ns.Send, ns.log, ns.setNotice = FOREVER, LAYER_CHANNEL, Send, log, setNotice
+  ns.notice = function() return notice end   -- the panel's line as it stands
+  ns.refresh = function() refresh() end
+end)(select(2, ...))

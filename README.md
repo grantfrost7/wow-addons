@@ -2,7 +2,7 @@
 
 A modified copy of **LayerSwap** for WoW Forever.
 
-LayerSwap was written by **Adam5288** (version 1.14.57). This copy only changes a few settings.
+LayerSwap was written by **Adam5288** (version 1.14.58). This copy only changes a few settings.
 
 ## What's changed
 
